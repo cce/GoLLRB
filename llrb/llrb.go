@@ -40,10 +40,10 @@ type UpdatableItem interface {
 
 //
 func less(x, y Item) bool {
-	if x == pinf {
+	if x == pinf || y == ninf {
 		return false
 	}
-	if x == ninf {
+	if x == ninf || y == pinf {
 		return true
 	}
 	return x.Less(y)
