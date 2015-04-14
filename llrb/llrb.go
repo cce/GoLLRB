@@ -33,6 +33,11 @@ type Item interface {
 	Less(than Item) bool
 }
 
+type UpdatableItem interface {
+	Less(than Item) bool
+	Update(other Item)
+}
+
 //
 func less(x, y Item) bool {
 	if x == pinf {
@@ -184,6 +189,44 @@ func (t *LLRB) replaceOrInsert(h *Node, item Item) (*Node, Item) {
 	h = walkUpRot23(h)
 
 	return h, replaced
+}
+
+// UpdateOrInsert inserts item into the tree. If an existing
+// element has the same order, the old item's Update() method
+// is called with the new item as its argument.  The updated
+// value is returned.
+func (t *LLRB) UpdateOrInsert(item Item) Item {
+	if item == nil {
+		panic("inserting nil item")
+	}
+	var updated Item
+	t.root, updated = t.updateOrInsert(t.root, item)
+	t.root.Black = true
+	if updated == nil {
+		t.count++
+	}
+	return updated
+}
+
+func (t *LLRB) updateOrInsert(h *Node, item Item) (*Node, Item) {
+	if h == nil {
+		return newNode(item), nil
+	}
+
+	h = walkDownRot23(h)
+
+	var updated Item
+	if less(item, h.Item) { // BUG
+		h.Left, updated = t.updateOrInsert(h.Left, item)
+	} else if less(h.Item, item) {
+		h.Right, updated = t.updateOrInsert(h.Right, item)
+	} else {
+		h.Item.(UpdatableItem).Update(item)
+	}
+
+	h = walkUpRot23(h)
+
+	return h, updated
 }
 
 // InsertNoReplace inserts item into the tree. If an existing
