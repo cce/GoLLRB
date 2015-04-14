@@ -222,6 +222,7 @@ func (t *LLRB) updateOrInsert(h *Node, item Item) (*Node, Item) {
 		h.Right, updated = t.updateOrInsert(h.Right, item)
 	} else {
 		h.Item.(UpdatableItem).Update(item)
+		updated = h.Item
 	}
 
 	h = walkUpRot23(h)
